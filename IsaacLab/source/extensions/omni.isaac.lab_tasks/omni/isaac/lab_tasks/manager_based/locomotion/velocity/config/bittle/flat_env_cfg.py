@@ -127,8 +127,8 @@ class BittleEventCfg:
         func=mdp.randomize_rigid_body_mass,
         mode="startup",
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="body"),
-            "mass_distribution_params": (-2.5, 2.5),
+            "asset_cfg": SceneEntityCfg("robot", body_names="torso"),
+            "mass_distribution_params": (-.04, .05),
             "operation": "add",
         },
     )
@@ -138,7 +138,7 @@ class BittleEventCfg:
         func=mdp.apply_external_force_torque,
         mode="reset",
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="body"),
+            "asset_cfg": SceneEntityCfg("robot", body_names="torso"),
             "force_range": (0.0, 0.0),
             "torque_range": (-0.0, 0.0),
         },
@@ -193,7 +193,7 @@ class BittleRewardsCfg:
             "mode_time": 0.3,
             "velocity_threshold": 0.5,
             "asset_cfg": SceneEntityCfg("robot"),
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_paw"),
         },
     )
     base_angular_velocity = RewardTermCfg(
@@ -213,7 +213,7 @@ class BittleRewardsCfg:
             "std": 0.05,
             "tanh_mult": 2.0,
             "target_height": 0.1,
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*_paw"),
         },
     )
     gait = RewardTermCfg(
@@ -223,7 +223,7 @@ class BittleRewardsCfg:
             "std": 0.1,
             "max_err": 0.2,
             "velocity_threshold": 0.5,
-            "synced_feet_pair_names": (("fl_foot", "hr_foot"), ("fr_foot", "hl_foot")),
+            "synced_feet_pair_names": (("left_front_paw", "right_back_paw"), ("right_front_paw", "left_back_paw")),
             "asset_cfg": SceneEntityCfg("robot"),
             "sensor_cfg": SceneEntityCfg("contact_forces"),
         },
@@ -234,7 +234,7 @@ class BittleRewardsCfg:
     air_time_variance = RewardTermCfg(
         func=bittle_mdp.air_time_variance_penalty,
         weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot")},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_paw")},
     )
     base_motion = RewardTermCfg(
         func=bittle_mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
@@ -246,15 +246,15 @@ class BittleRewardsCfg:
         func=bittle_mdp.foot_slip_penalty,
         weight=-0.5,
         params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*_paw"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_paw"),
             "threshold": 1.0,
         },
     )
     joint_acc = RewardTermCfg(
         func=bittle_mdp.joint_acceleration_penalty,
         weight=-1.0e-4,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["hip_left", "hip_right", "shoulder_left", "shoulder_right"])},
     )
     joint_pos = RewardTermCfg(
         func=bittle_mdp.joint_position_penalty,
@@ -273,7 +273,7 @@ class BittleRewardsCfg:
     joint_vel = RewardTermCfg(
         func=bittle_mdp.joint_velocity_penalty,
         weight=-1.0e-2,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["hip_left", "hip_right", "shoulder_left", "shoulder_right"])},
     )
 
 
@@ -284,7 +284,7 @@ class BittleTerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     body_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body", ".*leg"]), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["torso", "left_upper_leg", "right_upper_leg", "left_upper_arm", "right_upper_arm", "left_lower_leg", "right_lower_leg", "left_lower_arm", "right_lower_arm"]), "threshold": 1.0},
     )
     terrain_out_of_bounds = DoneTerm(
         func=mdp.terrain_out_of_bounds,
